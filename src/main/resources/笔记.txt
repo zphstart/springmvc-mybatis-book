@@ -1,0 +1,393 @@
+Spring事务传播行为（外部事务提交主要看外部是否有事务，有则在内部事务提交时提交。没有则在执行完以后就提交了，内部事务提交之前）
+1.Propagation.REQUIRED：如果当前没有事务，就新建一个事务（此种情况下外部行为不受内部事务管理）；如果已经存在一个事务，就加入到当前事务中（此时两个事务同时成功同时失败）。
+<!--
+    ①外部每有事务
+    19:43:31,607 DEBUG SqlSessionUtils:49 - Creating a new SqlSession
+    19:43:31,629 DEBUG SqlSessionUtils:49 - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@348ced0e] was not registered for synchronization because synchronization is not active
+    19:43:31,650 DEBUG DataSourceUtils:115 - Fetching JDBC Connection from DataSource
+    19:43:32,526 DEBUG SpringManagedTransaction:49 - JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@36362012] will not be managed by Spring
+    19:43:32,535 DEBUG insertUser:137 - ==>  Preparing: insert into USER(name,password) values (?,?)
+    19:43:32,617 DEBUG insertUser:137 - ==> Parameters: 张三(String), 123456789(String)
+    19:43:32,663 DEBUG insertUser:137 - <==    Updates: 1
+    19:43:32,710 DEBUG SqlSessionUtils:49 - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@348ced0e]
+    19:43:52,773 DEBUG BeanUtils:224 - BeanUtils.copyProperties(UserLog(id=null, username=null, password=null, date=null), User(id=15, username=张三, password=123456789))
+    19:43:52,803 DEBUG DataSourceTransactionManager:370 - Creating new transaction with name [com.zph.controller.UserLogController.save]: PROPAGATION_REQUIRED,ISOLATION_DEFAULT
+    19:43:52,803 DEBUG DataSourceTransactionManager:263 - Acquired Connection [com.mysql.cj.jdbc.ConnectionImpl@36362012] for JDBC transaction
+    19:43:52,811 DEBUG DataSourceTransactionManager:281 - Switching JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@36362012] to manual commit
+    19:43:52,816 DEBUG SqlSessionUtils:49 - Creating a new SqlSession
+    19:43:52,817 DEBUG SqlSessionUtils:49 - Registering transaction synchronization for SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6b2b5246]
+    19:43:52,823 DEBUG SpringManagedTransaction:49 - JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@36362012] will be managed by Spring
+    19:43:52,824 DEBUG save:137 - ==>  Preparing: INSERT INTO user_log VALUES(?,?,?,?)
+    19:43:52,827 DEBUG save:137 - ==> Parameters: 15(Integer), 张三(String), 123456789(String), 2022-09-25 19:43:52.792(Timestamp)
+    19:43:52,829 DEBUG save:137 - <==    Updates: 1
+    19:43:52,830 DEBUG SqlSessionUtils:49 - Releasing transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6b2b5246]
+    19:43:52,831 DEBUG SqlSessionUtils:49 - Transaction synchronization committing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6b2b5246]
+    19:43:52,831 DEBUG SqlSessionUtils:49 - Transaction synchronization deregistering SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6b2b5246]
+    19:43:52,832 DEBUG SqlSessionUtils:49 - Transaction synchronization closing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6b2b5246]
+    19:43:52,832 DEBUG DataSourceTransactionManager:740 - Initiating transaction commit
+    19:43:52,832 DEBUG DataSourceTransactionManager:326 - Committing JDBC transaction on Connection [com.mysql.cj.jdbc.ConnectionImpl@36362012]
+    19:43:52,987 DEBUG DataSourceTransactionManager:385 - Releasing JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@36362012] after transaction
+    19:50:52,280 DEBUG RequestResponseBodyMethodProcessor:119 - Read "application/json;charset=UTF-8" to [User(id=null, username=张三, password=123456789)]
+    19:50:52,318 DEBUG DataSourceTransactionManager:370 - Creating new transaction with name [com.zph.controller.UserController.save]: PROPAGATION_REQUIRED,ISOLATION_DEFAULT
+    19:50:53,299 DEBUG DataSourceTransactionManager:263 - Acquired Connection [com.mysql.cj.jdbc.ConnectionImpl@20f74c0d] for JDBC transaction
+    19:50:53,337 DEBUG DataSourceTransactionManager:281 - Switching JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@20f74c0d] to manual commit
+    19:50:53,400 DEBUG SqlSessionUtils:49 - Creating a new SqlSession
+    19:50:53,426 DEBUG SqlSessionUtils:49 - Registering transaction synchronization for SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3b62462e]
+    19:50:53,447 DEBUG SpringManagedTransaction:49 - JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@20f74c0d] will be managed by Spring
+    19:50:53,452 DEBUG insertUser:137 - ==>  Preparing: insert into USER(name,password) values (?,?)
+    19:50:53,516 DEBUG insertUser:137 - ==> Parameters: 张三(String), 123456789(String)
+    19:50:53,518 DEBUG insertUser:137 - <==    Updates: 1
+    19:50:53,564 DEBUG SqlSessionUtils:49 - Releasing transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3b62462e]
+    19:51:13,633 DEBUG BeanUtils:224 - BeanUtils.copyProperties(UserLog(id=null, username=null, password=null, date=null), User(id=16, username=张三, password=123456789))
+    19:51:13,654 DEBUG DataSourceTransactionManager:470 - Participating in existing transaction
+    19:51:13,661 DEBUG SqlSessionUtils:49 - Fetched SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3b62462e] from current transaction
+    19:51:13,662 DEBUG save:137 - ==>  Preparing: INSERT INTO user_log VALUES(?,?,?,?)
+    19:51:13,666 DEBUG save:137 - ==> Parameters: 16(Integer), 张三(String), 123456789(String), 2022-09-25 19:51:13.654(Timestamp)
+    19:51:13,668 DEBUG save:137 - <==    Updates: 1
+    19:51:13,668 DEBUG SqlSessionUtils:49 - Releasing transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3b62462e]
+    19:51:13,669 DEBUG SqlSessionUtils:49 - Transaction synchronization committing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3b62462e]
+    19:51:13,670 DEBUG SqlSessionUtils:49 - Transaction synchronization deregistering SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3b62462e]
+    19:51:13,672 DEBUG SqlSessionUtils:49 - Transaction synchronization closing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3b62462e]
+    19:51:13,672 DEBUG DataSourceTransactionManager:740 - Initiating transaction commit
+    19:51:13,673 DEBUG DataSourceTransactionManager:326 - Committing JDBC transaction on Connection [com.mysql.cj.jdbc.ConnectionImpl@20f74c0d]
+    19:51:13,731 DEBUG DataSourceTransactionManager:385 - Releasing JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@20f74c0d] after transaction
+    19:51:13,751 DEBUG JstlView:309 - View name 'success', model {init=UserController已经初始化, org.springframework.validation.BindingResult.user=org.springframework.validation.BeanPropertyBindingResult: 0 errors}
+    19:51:13,767 DEBUG JstlView:169 - Forwarding to [/WEB-INF/views/success.jsp]
+    19:51:14,069 DEBUG DispatcherServlet:1131 - Completed 200 OK
+-->
+2.Propagation.SUPPORTS:支持当前事务，如果当前没有事务，就已无事务方式执行。
+<!--
+    ①外部有事务
+    19:55:40,856 DEBUG RequestResponseBodyMethodProcessor:119 - Read "application/json;charset=UTF-8" to [User(id=null, username=张三, password=123456789)]
+    19:55:40,890 DEBUG DataSourceTransactionManager:370 - Creating new transaction with name [com.zph.controller.UserController.save]: PROPAGATION_REQUIRED,ISOLATION_DEFAULT
+    19:55:41,841 DEBUG DataSourceTransactionManager:263 - Acquired Connection [com.mysql.cj.jdbc.ConnectionImpl@47f58865] for JDBC transaction
+    19:55:41,858 DEBUG DataSourceTransactionManager:281 - Switching JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@47f58865] to manual commit
+    19:55:41,893 DEBUG SqlSessionUtils:49 - Creating a new SqlSession
+    19:55:41,916 DEBUG SqlSessionUtils:49 - Registering transaction synchronization for SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@23d5649d]
+    19:55:41,941 DEBUG SpringManagedTransaction:49 - JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@47f58865] will be managed by Spring
+    19:55:41,951 DEBUG insertUser:137 - ==>  Preparing: insert into USER(name,password) values (?,?)
+    19:55:42,042 DEBUG insertUser:137 - ==> Parameters: 张三(String), 123456789(String)
+    19:55:42,047 DEBUG insertUser:137 - <==    Updates: 1
+    19:55:42,115 DEBUG SqlSessionUtils:49 - Releasing transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@23d5649d]
+    19:56:02,174 DEBUG BeanUtils:224 - BeanUtils.copyProperties(UserLog(id=null, username=null, password=null, date=null), User(id=17, username=张三, password=123456789))
+    19:56:02,198 DEBUG DataSourceTransactionManager:470 - Participating in existing transaction
+    19:56:02,205 DEBUG SqlSessionUtils:49 - Fetched SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@23d5649d] from current transaction
+    19:56:02,206 DEBUG save:137 - ==>  Preparing: INSERT INTO user_log VALUES(?,?,?,?)
+    19:56:02,210 DEBUG save:137 - ==> Parameters: 17(Integer), 张三(String), 123456789(String), 2022-09-25 19:56:02.198(Timestamp)
+    19:56:02,211 DEBUG save:137 - <==    Updates: 1
+    19:56:02,212 DEBUG SqlSessionUtils:49 - Releasing transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@23d5649d]
+    19:56:02,212 DEBUG SqlSessionUtils:49 - Transaction synchronization committing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@23d5649d]
+    19:56:02,213 DEBUG SqlSessionUtils:49 - Transaction synchronization deregistering SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@23d5649d]
+    19:56:02,213 DEBUG SqlSessionUtils:49 - Transaction synchronization closing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@23d5649d]
+    19:56:02,214 DEBUG DataSourceTransactionManager:740 - Initiating transaction commit
+    19:56:02,214 DEBUG DataSourceTransactionManager:326 - Committing JDBC transaction on Connection [com.mysql.cj.jdbc.ConnectionImpl@47f58865]
+    19:56:02,357 DEBUG DataSourceTransactionManager:385 - Releasing JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@47f58865] after transaction
+    ②外部没有事务（以无事务执行）
+    19:59:58,392 DEBUG RequestResponseBodyMethodProcessor:119 - Read "application/json;charset=UTF-8" to [User(id=null, username=张三, password=123456789)]
+    19:59:58,454 DEBUG SqlSessionUtils:49 - Creating a new SqlSession
+    19:59:58,475 DEBUG SqlSessionUtils:49 - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5e4dd6fd] was not registered for synchronization because synchronization is not active
+    19:59:58,495 DEBUG DataSourceUtils:115 - Fetching JDBC Connection from DataSource
+    19:59:59,490 DEBUG SpringManagedTransaction:49 - JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@4c81b412] will not be managed by Spring
+    19:59:59,497 DEBUG insertUser:137 - ==>  Preparing: insert into USER(name,password) values (?,?)
+    19:59:59,569 DEBUG insertUser:137 - ==> Parameters: 张三(String), 123456789(String)
+    19:59:59,942 DEBUG insertUser:137 - <==    Updates: 1
+    19:59:59,997 DEBUG SqlSessionUtils:49 - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5e4dd6fd]
+    20:00:20,063 DEBUG BeanUtils:224 - BeanUtils.copyProperties(UserLog(id=null, username=null, password=null, date=null), User(id=18, username=张三, password=123456789))
+    20:00:20,096 DEBUG SqlSessionUtils:49 - Creating a new SqlSession
+    20:00:20,099 DEBUG SqlSessionUtils:49 - Registering transaction synchronization for SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7e2f9265]
+    20:00:20,107 DEBUG DataSourceUtils:115 - Fetching JDBC Connection from DataSource
+    20:00:20,111 DEBUG SpringManagedTransaction:49 - JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@4c81b412] will be managed by Spring
+    20:00:20,112 DEBUG save:137 - ==>  Preparing: INSERT INTO user_log VALUES(?,?,?,?)
+    20:00:20,116 DEBUG save:137 - ==> Parameters: 18(Integer), 张三(String), 123456789(String), 2022-09-25 20:00:20.084(Timestamp)
+    20:00:20,242 DEBUG save:137 - <==    Updates: 1
+    20:00:20,242 DEBUG SqlSessionUtils:49 - Releasing transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7e2f9265]
+    20:00:20,243 DEBUG SqlSessionUtils:49 - Transaction synchronization deregistering SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7e2f9265]
+    20:00:20,243 DEBUG SqlSessionUtils:49 - Transaction synchronization closing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7e2f9265]
+-->
+3. Propagation.MANDATORY:使用外部事务，如果外部没有事务抛出异常
+<!--
+    ①外部有事务
+    20:05:48,244 DEBUG RequestResponseBodyMethodProcessor:119 - Read "application/json;charset=UTF-8" to [User(id=null, username=张三, password=123456789)]
+    20:05:48,284 DEBUG DataSourceTransactionManager:370 - Creating new transaction with name [com.zph.controller.UserController.save]: PROPAGATION_REQUIRED,ISOLATION_DEFAULT
+    20:05:49,232 DEBUG DataSourceTransactionManager:263 - Acquired Connection [com.mysql.cj.jdbc.ConnectionImpl@3641efb7] for JDBC transaction
+    20:05:49,247 DEBUG DataSourceTransactionManager:281 - Switching JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@3641efb7] to manual commit
+    20:05:49,280 DEBUG SqlSessionUtils:49 - Creating a new SqlSession
+    20:05:49,300 DEBUG SqlSessionUtils:49 - Registering transaction synchronization for SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7f5e9c96]
+    20:05:49,319 DEBUG SpringManagedTransaction:49 - JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@3641efb7] will be managed by Spring
+    20:05:49,331 DEBUG insertUser:137 - ==>  Preparing: insert into USER(name,password) values (?,?)
+    20:05:49,408 DEBUG insertUser:137 - ==> Parameters: 张三(String), 123456789(String)
+    20:05:49,415 DEBUG insertUser:137 - <==    Updates: 1
+    20:05:49,469 DEBUG SqlSessionUtils:49 - Releasing transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7f5e9c96]
+    20:06:09,533 DEBUG BeanUtils:224 - BeanUtils.copyProperties(UserLog(id=null, username=null, password=null, date=null), User(id=20, username=张三, password=123456789))
+    20:06:09,553 DEBUG DataSourceTransactionManager:470 - Participating in existing transaction
+    20:06:09,560 DEBUG SqlSessionUtils:49 - Fetched SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7f5e9c96] from current transaction
+    20:06:09,561 DEBUG save:137 - ==>  Preparing: INSERT INTO user_log VALUES(?,?,?,?)
+    20:06:09,565 DEBUG save:137 - ==> Parameters: 20(Integer), 张三(String), 123456789(String), 2022-09-25 20:06:09.553(Timestamp)
+    20:06:09,566 DEBUG save:137 - <==    Updates: 1
+    20:06:09,567 DEBUG SqlSessionUtils:49 - Releasing transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7f5e9c96]
+    20:06:09,568 DEBUG SqlSessionUtils:49 - Transaction synchronization committing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7f5e9c96]
+    20:06:09,568 DEBUG SqlSessionUtils:49 - Transaction synchronization deregistering SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7f5e9c96]
+    20:06:09,569 DEBUG SqlSessionUtils:49 - Transaction synchronization closing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7f5e9c96]
+    20:06:09,569 DEBUG DataSourceTransactionManager:740 - Initiating transaction commit
+    20:06:09,569 DEBUG DataSourceTransactionManager:326 - Committing JDBC transaction on Connection [com.mysql.cj.jdbc.ConnectionImpl@3641efb7]
+    20:06:09,738 DEBUG DataSourceTransactionManager:385 - Releasing JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@3641efb7] after transaction
+
+    ②外部没有事务
+    20:03:58,942 DEBUG RequestResponseBodyMethodProcessor:119 - Read "application/json;charset=UTF-8" to [User(id=null, username=张三, password=123456789)]
+    20:03:59,000 DEBUG SqlSessionUtils:49 - Creating a new SqlSession
+    20:03:59,029 DEBUG SqlSessionUtils:49 - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@71a3f0dd] was not registered for synchronization because synchronization is not active
+    20:03:59,052 DEBUG DataSourceUtils:115 - Fetching JDBC Connection from DataSource
+    20:04:00,075 DEBUG SpringManagedTransaction:49 - JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@25b47c09] will not be managed by Spring
+    20:04:00,084 DEBUG insertUser:137 - ==>  Preparing: insert into USER(name,password) values (?,?)
+    20:04:00,153 DEBUG insertUser:137 - ==> Parameters: 张三(String), 123456789(String)
+    20:04:00,204 DEBUG insertUser:137 - <==    Updates: 1
+    20:04:00,250 DEBUG SqlSessionUtils:49 - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@71a3f0dd]
+    20:04:20,322 DEBUG BeanUtils:224 - BeanUtils.copyProperties(UserLog(id=null, username=null, password=null, date=null), User(id=19, username=张三, password=123456789))
+    20:04:20,356 DEBUG DispatcherServlet:1101 - Failed to complete request: org.springframework.transaction.IllegalTransactionStateException: No existing transaction found for transaction marked with propagation 'mandatory'
+-->
+4.Propagation.REQUIRES_NEW，新建事务，如果外部存在事务；把外部事务挂起
+<!--
+    ①外部有事务（外部事务在内部事务提交时提交）
+    20:50:12,399 DEBUG DataSourceTransactionManager:370 - Creating new transaction with name [com.zph.controller.UserController.save]: PROPAGATION_REQUIRED,ISOLATION_DEFAULT
+    20:50:13,549 DEBUG DataSourceTransactionManager:263 - Acquired Connection [com.mysql.cj.jdbc.ConnectionImpl@251ee89a] for JDBC transaction
+    20:50:13,565 DEBUG DataSourceTransactionManager:281 - Switching JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@251ee89a] to manual commit
+    20:50:13,598 DEBUG SqlSessionUtils:49 - Creating a new SqlSession
+    20:50:13,616 DEBUG SqlSessionUtils:49 - Registering transaction synchronization for SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@16ed96ce]
+    20:50:13,640 DEBUG SpringManagedTransaction:49 - JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@251ee89a] will be managed by Spring
+    20:50:13,648 DEBUG insertUser:137 - ==>  Preparing: insert into USER(name,password) values (?,?)
+    20:50:13,723 DEBUG insertUser:137 - ==> Parameters: 张三(String), 123456789(String)
+    20:50:13,727 DEBUG insertUser:137 - <==    Updates: 1
+    20:50:13,777 DEBUG SqlSessionUtils:49 - Releasing transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@16ed96ce]
+    20:50:33,849 DEBUG BeanUtils:224 - BeanUtils.copyProperties(UserLog(id=null, username=null, password=null, date=null), User(id=21, username=张三, password=123456789))
+    20:50:33,868 DEBUG DataSourceTransactionManager:429 - Suspending current transaction, creating new transaction with name [com.zph.controller.UserLogController.save]
+    20:50:33,869 DEBUG SqlSessionUtils:49 - Transaction synchronization suspending SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@16ed96ce]
+    20:50:34,010 DEBUG DataSourceTransactionManager:263 - Acquired Connection [com.mysql.cj.jdbc.ConnectionImpl@16eb9d63] for JDBC transaction
+    20:50:34,010 DEBUG DataSourceTransactionManager:281 - Switching JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@16eb9d63] to manual commit
+    20:50:34,017 DEBUG SqlSessionUtils:49 - Creating a new SqlSession
+    20:50:34,017 DEBUG SqlSessionUtils:49 - Registering transaction synchronization for SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@13d173e9]
+    20:50:34,018 DEBUG SpringManagedTransaction:49 - JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@16eb9d63] will be managed by Spring
+    20:50:34,018 DEBUG save:137 - ==>  Preparing: INSERT INTO user_log VALUES(?,?,?,?)
+    20:50:34,024 DEBUG save:137 - ==> Parameters: 21(Integer), 张三(String), 123456789(String), 2022-09-25 20:50:33.868(Timestamp)
+    20:50:34,026 DEBUG save:137 - <==    Updates: 1
+    20:50:34,026 DEBUG SqlSessionUtils:49 - Releasing transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@13d173e9]
+    20:50:34,026 DEBUG SqlSessionUtils:49 - Transaction synchronization committing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@13d173e9]
+    20:50:34,026 DEBUG SqlSessionUtils:49 - Transaction synchronization deregistering SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@13d173e9]
+    20:50:34,027 DEBUG SqlSessionUtils:49 - Transaction synchronization closing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@13d173e9]
+    20:50:34,027 DEBUG DataSourceTransactionManager:740 - Initiating transaction commit
+    20:50:34,027 DEBUG DataSourceTransactionManager:326 - Committing JDBC transaction on Connection [com.mysql.cj.jdbc.ConnectionImpl@16eb9d63]
+    20:50:34,106 DEBUG DataSourceTransactionManager:385 - Releasing JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@16eb9d63] after transaction
+    20:50:34,109 DEBUG DataSourceTransactionManager:1008 - Resuming suspended transaction after completion of inner transaction
+    20:50:34,110 DEBUG SqlSessionUtils:49 - Transaction synchronization resuming SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@16ed96ce]
+    20:50:34,111 DEBUG SqlSessionUtils:49 - Transaction synchronization committing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@16ed96ce]
+    20:50:34,111 DEBUG SqlSessionUtils:49 - Transaction synchronization deregistering SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@16ed96ce]
+    20:50:34,111 DEBUG SqlSessionUtils:49 - Transaction synchronization closing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@16ed96ce]
+    20:50:34,111 DEBUG DataSourceTransactionManager:740 - Initiating transaction commit
+    20:50:34,112 DEBUG DataSourceTransactionManager:326 - Committing JDBC transaction on Connection [com.mysql.cj.jdbc.ConnectionImpl@251ee89a]
+    20:50:34,161 DEBUG DataSourceTransactionManager:385 - Releasing JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@251ee89a] after transaction
+    ②外部没事务
+    21:00:34,939 DEBUG SqlSessionUtils:49 - Creating a new SqlSession
+    21:00:34,963 DEBUG SqlSessionUtils:49 - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@233c14ce] was not registered for synchronization because synchronization is not active
+    21:00:34,982 DEBUG DataSourceUtils:115 - Fetching JDBC Connection from DataSource
+    21:00:35,875 DEBUG SpringManagedTransaction:49 - JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@59dc49f5] will not be managed by Spring
+    21:00:35,886 DEBUG insertUser:137 - ==>  Preparing: insert into USER(name,password) values (?,?)
+    21:00:35,951 DEBUG insertUser:137 - ==> Parameters: 张三(String), 123456789(String)
+    21:00:36,011 DEBUG insertUser:137 - <==    Updates: 1
+    21:00:36,053 DEBUG SqlSessionUtils:49 - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@233c14ce]
+    21:00:56,133 DEBUG BeanUtils:224 - BeanUtils.copyProperties(UserLog(id=null, username=null, password=null, date=null), User(id=24, username=张三, password=123456789))
+    21:00:56,165 DEBUG DataSourceTransactionManager:370 - Creating new transaction with name [com.zph.controller.UserLogController.save]: PROPAGATION_REQUIRES_NEW,ISOLATION_DEFAULT
+    21:00:56,165 DEBUG DataSourceTransactionManager:263 - Acquired Connection [com.mysql.cj.jdbc.ConnectionImpl@59dc49f5] for JDBC transaction
+    21:00:56,172 DEBUG DataSourceTransactionManager:281 - Switching JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@59dc49f5] to manual commit
+    21:00:56,179 DEBUG SqlSessionUtils:49 - Creating a new SqlSession
+    21:00:56,180 DEBUG SqlSessionUtils:49 - Registering transaction synchronization for SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@1eb5e67b]
+    21:00:56,184 DEBUG SpringManagedTransaction:49 - JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@59dc49f5] will be managed by Spring
+    21:00:56,185 DEBUG save:137 - ==>  Preparing: INSERT INTO user_log VALUES(?,?,?,?)
+    21:00:56,188 DEBUG save:137 - ==> Parameters: 24(Integer), 张三(String), 123456789(String), 2022-09-25 21:00:56.153(Timestamp)
+    21:00:56,190 DEBUG save:137 - <==    Updates: 1
+    21:00:56,191 DEBUG SqlSessionUtils:49 - Releasing transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@1eb5e67b]
+    21:00:56,191 DEBUG SqlSessionUtils:49 - Transaction synchronization committing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@1eb5e67b]
+    21:00:56,192 DEBUG SqlSessionUtils:49 - Transaction synchronization deregistering SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@1eb5e67b]
+    21:00:56,192 DEBUG SqlSessionUtils:49 - Transaction synchronization closing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@1eb5e67b]
+    21:00:56,192 DEBUG DataSourceTransactionManager:740 - Initiating transaction commit
+    21:00:56,193 DEBUG DataSourceTransactionManager:326 - Committing JDBC transaction on Connection [com.mysql.cj.jdbc.ConnectionImpl@59dc49f5]
+    21:00:56,346 DEBUG DataSourceTransactionManager:385 - Releasing JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@59dc49f5] after transaction
+
+-->
+5.Propagation.NOT_SUPPORTED：非事务方式执行，若外部有事务则挂起
+<!--
+    ①外部有事务
+    21:05:00,676 DEBUG DataSourceTransactionManager:370 - Creating new transaction with name [com.zph.controller.UserController.save]: PROPAGATION_REQUIRED,ISOLATION_DEFAULT
+    21:05:01,590 DEBUG DataSourceTransactionManager:263 - Acquired Connection [com.mysql.cj.jdbc.ConnectionImpl@aaee84d] for JDBC transaction
+    21:05:01,613 DEBUG DataSourceTransactionManager:281 - Switching JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@aaee84d] to manual commit
+    21:05:01,652 DEBUG SqlSessionUtils:49 - Creating a new SqlSession
+    21:05:01,678 DEBUG SqlSessionUtils:49 - Registering transaction synchronization for SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@26ee2]
+    21:05:01,696 DEBUG SpringManagedTransaction:49 - JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@aaee84d] will be managed by Spring
+    21:05:01,710 DEBUG insertUser:137 - ==>  Preparing: insert into USER(name,password) values (?,?)
+    21:05:01,788 DEBUG insertUser:137 - ==> Parameters: 张三(String), 123456789(String)
+    21:05:01,791 DEBUG insertUser:137 - <==    Updates: 1
+    21:05:01,846 DEBUG SqlSessionUtils:49 - Releasing transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@26ee2]
+    21:05:21,924 DEBUG BeanUtils:224 - BeanUtils.copyProperties(UserLog(id=null, username=null, password=null, date=null), User(id=25, username=张三, password=123456789))
+    21:05:21,943 DEBUG DataSourceTransactionManager:419 - Suspending current transaction
+    21:05:21,943 DEBUG SqlSessionUtils:49 - Transaction synchronization suspending SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@26ee2]
+    21:05:21,951 DEBUG SqlSessionUtils:49 - Creating a new SqlSession
+    21:05:21,951 DEBUG SqlSessionUtils:49 - Registering transaction synchronization for SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3922a141]
+    21:05:21,952 DEBUG DataSourceUtils:115 - Fetching JDBC Connection from DataSource
+    21:05:21,987 DEBUG SpringManagedTransaction:49 - JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@7a824749] will be managed by Spring
+    21:05:21,988 DEBUG save:137 - ==>  Preparing: INSERT INTO user_log VALUES(?,?,?,?)
+    21:05:21,992 DEBUG save:137 - ==> Parameters: 25(Integer), 张三(String), 123456789(String), 2022-09-25 21:05:21.943(Timestamp)
+    21:05:22,160 DEBUG save:137 - <==    Updates: 1
+    21:05:22,160 DEBUG SqlSessionUtils:49 - Releasing transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3922a141]
+    21:05:22,161 DEBUG SqlSessionUtils:49 - Transaction synchronization deregistering SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3922a141]
+    21:05:22,163 DEBUG SqlSessionUtils:49 - Transaction synchronization closing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3922a141]
+    21:05:22,167 DEBUG DataSourceTransactionManager:1008 - Resuming suspended transaction after completion of inner transaction
+    21:05:22,168 DEBUG SqlSessionUtils:49 - Transaction synchronization resuming SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@26ee2]
+    21:05:22,169 DEBUG SqlSessionUtils:49 - Transaction synchronization committing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@26ee2]
+    21:05:22,170 DEBUG SqlSessionUtils:49 - Transaction synchronization deregistering SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@26ee2]
+    21:05:22,170 DEBUG SqlSessionUtils:49 - Transaction synchronization closing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@26ee2]
+    21:05:22,170 DEBUG DataSourceTransactionManager:740 - Initiating transaction commit
+    21:05:22,170 DEBUG DataSourceTransactionManager:326 - Committing JDBC transaction on Connection [com.mysql.cj.jdbc.ConnectionImpl@aaee84d]
+    ②外部无事务
+    21:08:15,654 DEBUG SqlSessionUtils:49 - Creating a new SqlSession
+    21:08:15,683 DEBUG SqlSessionUtils:49 - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@12d262f9] was not registered for synchronization because synchronization is not active
+    21:08:15,709 DEBUG DataSourceUtils:115 - Fetching JDBC Connection from DataSource
+    21:08:16,705 DEBUG SpringManagedTransaction:49 - JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@4a16e762] will not be managed by Spring
+    21:08:16,712 DEBUG insertUser:137 - ==>  Preparing: insert into USER(name,password) values (?,?)
+    21:08:16,802 DEBUG insertUser:137 - ==> Parameters: 张三(String), 123456789(String)
+    21:08:16,856 DEBUG insertUser:137 - <==    Updates: 1
+    21:08:16,902 DEBUG SqlSessionUtils:49 - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@12d262f9]
+    21:08:36,963 DEBUG BeanUtils:224 - BeanUtils.copyProperties(UserLog(id=null, username=null, password=null, date=null), User(id=26, username=张三, password=123456789))
+    21:08:36,997 DEBUG SqlSessionUtils:49 - Creating a new SqlSession
+    21:08:36,999 DEBUG SqlSessionUtils:49 - Registering transaction synchronization for SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@57209869]
+    21:08:37,007 DEBUG DataSourceUtils:115 - Fetching JDBC Connection from DataSource
+    21:08:37,012 DEBUG SpringManagedTransaction:49 - JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@4a16e762] will be managed by Spring
+    21:08:37,012 DEBUG save:137 - ==>  Preparing: INSERT INTO user_log VALUES(?,?,?,?)
+    21:08:37,017 DEBUG save:137 - ==> Parameters: 26(Integer), 张三(String), 123456789(String), 2022-09-25 21:08:36.983(Timestamp)
+    21:08:37,058 DEBUG save:137 - <==    Updates: 1
+    21:08:37,058 DEBUG SqlSessionUtils:49 - Releasing transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@57209869]
+    21:08:37,059 DEBUG SqlSessionUtils:49 - Transaction synchronization deregistering SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@57209869]
+    21:08:37,059 DEBUG SqlSessionUtils:49 - Transaction synchronization closing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@57209869]
+-->
+6. Propagation.NEVER:以非事务方式执行，如果外部有事务，抛出异常
+<!--
+    ①外部有事务，抛出异常，外部事务回滚
+    21:12:15,545 DEBUG DataSourceTransactionManager:370 - Creating new transaction with name [com.zph.controller.UserController.save]: PROPAGATION_REQUIRED,ISOLATION_DEFAULT
+    21:12:16,535 DEBUG DataSourceTransactionManager:263 - Acquired Connection [com.mysql.cj.jdbc.ConnectionImpl@1a0e087c] for JDBC transaction
+    21:12:16,549 DEBUG DataSourceTransactionManager:281 - Switching JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@1a0e087c] to manual commit
+    21:12:16,586 DEBUG SqlSessionUtils:49 - Creating a new SqlSession
+    21:12:16,612 DEBUG SqlSessionUtils:49 - Registering transaction synchronization for SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5536a59e]
+    21:12:16,634 DEBUG SpringManagedTransaction:49 - JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@1a0e087c] will be managed by Spring
+    21:12:16,643 DEBUG insertUser:137 - ==>  Preparing: insert into USER(name,password) values (?,?)
+    21:12:16,713 DEBUG insertUser:137 - ==> Parameters: 张三(String), 123456789(String)
+    21:12:16,715 DEBUG insertUser:137 - <==    Updates: 1
+    21:12:16,765 DEBUG SqlSessionUtils:49 - Releasing transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5536a59e]
+    21:12:36,840 DEBUG BeanUtils:224 - BeanUtils.copyProperties(UserLog(id=null, username=null, password=null, date=null), User(id=27, username=张三, password=123456789))
+    21:12:36,860 DEBUG SqlSessionUtils:49 - Transaction synchronization deregistering SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5536a59e]
+    21:12:36,860 DEBUG SqlSessionUtils:49 - Transaction synchronization closing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5536a59e]
+    21:12:36,861 DEBUG DataSourceTransactionManager:833 - Initiating transaction rollback
+    21:12:36,861 DEBUG DataSourceTransactionManager:341 - Rolling back JDBC transaction on Connection [com.mysql.cj.jdbc.ConnectionImpl@1a0e087c]
+    21:12:36,886 DEBUG DataSourceTransactionManager:385 - Releasing JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@1a0e087c] after transaction
+    21:12:36,891 DEBUG DispatcherServlet:1101 - Failed to complete request: org.springframework.transaction.IllegalTransactionStateException: Existing transaction found for transaction marked with propagation 'never'
+    ②外部没有事务
+    21:15:11,562 DEBUG SqlSessionUtils:49 - Creating a new SqlSession
+    21:15:11,592 DEBUG SqlSessionUtils:49 - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6cb868ab] was not registered for synchronization because synchronization is not active
+    21:15:11,616 DEBUG DataSourceUtils:115 - Fetching JDBC Connection from DataSource
+    21:15:12,565 DEBUG SpringManagedTransaction:49 - JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@62c82cad] will not be managed by Spring
+    21:15:12,575 DEBUG insertUser:137 - ==>  Preparing: insert into USER(name,password) values (?,?)
+    21:15:12,652 DEBUG insertUser:137 - ==> Parameters: 张三(String), 123456789(String)
+    21:15:12,785 DEBUG insertUser:137 - <==    Updates: 1
+    21:15:12,830 DEBUG SqlSessionUtils:49 - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6cb868ab]
+    21:15:32,895 DEBUG BeanUtils:224 - BeanUtils.copyProperties(UserLog(id=null, username=null, password=null, date=null), User(id=28, username=张三, password=123456789))
+    21:15:32,932 DEBUG SqlSessionUtils:49 - Creating a new SqlSession
+    21:15:32,933 DEBUG SqlSessionUtils:49 - Registering transaction synchronization for SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@be32a41]
+    21:15:32,943 DEBUG DataSourceUtils:115 - Fetching JDBC Connection from DataSource
+    21:15:32,948 DEBUG SpringManagedTransaction:49 - JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@62c82cad] will be managed by Spring
+    21:15:32,948 DEBUG save:137 - ==>  Preparing: INSERT INTO user_log VALUES(?,?,?,?)
+    21:15:32,953 DEBUG save:137 - ==> Parameters: 28(Integer), 张三(String), 123456789(String), 2022-09-25 21:15:32.916(Timestamp)
+    21:15:33,086 DEBUG save:137 - <==    Updates: 1
+    21:15:33,087 DEBUG SqlSessionUtils:49 - Releasing transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@be32a41]
+    21:15:33,088 DEBUG SqlSessionUtils:49 - Transaction synchronization deregistering SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@be32a41]
+    21:15:33,088 DEBUG SqlSessionUtils:49 - Transaction synchronization closing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@be32a41]
+-->
+7.  Propagation.NESTED：如果外部存在事务，则嵌套存在事务，如果外部没有事务，新建一个事务。
+<!--
+    ①外部有事务：事务外部事务
+    21:19:36,589 DEBUG DataSourceTransactionManager:370 - Creating new transaction with name [com.zph.controller.UserController.save]: PROPAGATION_REQUIRED,ISOLATION_DEFAULT
+    21:19:37,518 DEBUG DataSourceTransactionManager:263 - Acquired Connection [com.mysql.cj.jdbc.ConnectionImpl@35939c26] for JDBC transaction
+    21:19:37,532 DEBUG DataSourceTransactionManager:281 - Switching JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@35939c26] to manual commit
+    21:19:37,563 DEBUG SqlSessionUtils:49 - Creating a new SqlSession
+    21:19:37,594 DEBUG SqlSessionUtils:49 - Registering transaction synchronization for SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@189e56a2]
+    21:19:37,619 DEBUG SpringManagedTransaction:49 - JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@35939c26] will be managed by Spring
+    21:19:37,627 DEBUG insertUser:137 - ==>  Preparing: insert into USER(name,password) values (?,?)
+    21:19:37,699 DEBUG insertUser:137 - ==> Parameters: 张三(String), 123456789(String)
+    21:19:37,703 DEBUG insertUser:137 - <==    Updates: 1
+    21:19:37,749 DEBUG SqlSessionUtils:49 - Releasing transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@189e56a2]
+    21:19:57,815 DEBUG BeanUtils:224 - BeanUtils.copyProperties(UserLog(id=null, username=null, password=null, date=null), User(id=29, username=张三, password=123456789))
+    21:19:57,837 DEBUG DataSourceTransactionManager:449 - Creating nested transaction with name [com.zph.controller.UserLogController.save]
+    21:19:57,874 DEBUG SqlSessionUtils:49 - Fetched SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@189e56a2] from current transaction
+    21:19:57,875 DEBUG save:137 - ==>  Preparing: INSERT INTO user_log VALUES(?,?,?,?)
+    21:19:57,878 DEBUG save:137 - ==> Parameters: 29(Integer), 张三(String), 123456789(String), 2022-09-25 21:19:57.837(Timestamp)
+    21:19:57,880 DEBUG save:137 - <==    Updates: 1
+    21:19:57,880 DEBUG SqlSessionUtils:49 - Releasing transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@189e56a2]
+    21:19:57,881 DEBUG DataSourceTransactionManager:733 - Releasing transaction savepoint
+    21:19:57,881 DEBUG SqlSessionUtils:49 - Transaction synchronization committing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@189e56a2]
+    21:19:57,882 DEBUG SqlSessionUtils:49 - Transaction synchronization deregistering SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@189e56a2]
+    21:19:57,882 DEBUG SqlSessionUtils:49 - Transaction synchronization closing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@189e56a2]
+    21:19:57,883 DEBUG DataSourceTransactionManager:740 - Initiating transaction commit
+    21:19:57,883 DEBUG DataSourceTransactionManager:326 - Committing JDBC transaction on Connection [com.mysql.cj.jdbc.ConnectionImpl@35939c26]
+    21:19:57,919 DEBUG DataSourceTransactionManager:385 - Releasing JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@35939c26] after transaction
+    ②外部没有事务
+    21:24:22,626 DEBUG SqlSessionUtils:49 - Creating a new SqlSession
+    21:24:22,656 DEBUG SqlSessionUtils:49 - SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@78c31f09] was not registered for synchronization because synchronization is not active
+    21:24:22,686 DEBUG DataSourceUtils:115 - Fetching JDBC Connection from DataSource
+    21:24:23,670 DEBUG SpringManagedTransaction:49 - JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@3f7322c1] will not be managed by Spring
+    21:24:23,677 DEBUG insertUser:137 - ==>  Preparing: insert into USER(name,password) values (?,?)
+    21:24:23,746 DEBUG insertUser:137 - ==> Parameters: 张三(String), 123456789(String)
+    21:24:23,878 DEBUG insertUser:137 - <==    Updates: 1
+    21:24:23,925 DEBUG SqlSessionUtils:49 - Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@78c31f09]
+    21:24:43,987 DEBUG BeanUtils:224 - BeanUtils.copyProperties(UserLog(id=null, username=null, password=null, date=null), User(id=30, username=张三, password=123456789))
+    21:24:44,016 DEBUG DataSourceTransactionManager:370 - Creating new transaction with name [com.zph.controller.UserLogController.save]: PROPAGATION_NESTED,ISOLATION_DEFAULT
+    21:24:44,017 DEBUG DataSourceTransactionManager:263 - Acquired Connection [com.mysql.cj.jdbc.ConnectionImpl@3f7322c1] for JDBC transaction
+    21:24:44,024 DEBUG DataSourceTransactionManager:281 - Switching JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@3f7322c1] to manual commit
+    21:24:44,029 DEBUG SqlSessionUtils:49 - Creating a new SqlSession
+    21:24:44,030 DEBUG SqlSessionUtils:49 - Registering transaction synchronization for SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4cdd8095]
+    21:24:44,035 DEBUG SpringManagedTransaction:49 - JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@3f7322c1] will be managed by Spring
+    21:24:44,036 DEBUG save:137 - ==>  Preparing: INSERT INTO user_log VALUES(?,?,?,?)
+    21:24:44,040 DEBUG save:137 - ==> Parameters: 30(Integer), 张三(String), 123456789(String), 2022-09-25 21:24:44.006(Timestamp)
+    21:24:44,042 DEBUG save:137 - <==    Updates: 1
+    21:24:44,042 DEBUG SqlSessionUtils:49 - Releasing transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4cdd8095]
+    21:24:44,043 DEBUG SqlSessionUtils:49 - Transaction synchronization committing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4cdd8095]
+    21:24:44,044 DEBUG SqlSessionUtils:49 - Transaction synchronization deregistering SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4cdd8095]
+    21:24:44,044 DEBUG SqlSessionUtils:49 - Transaction synchronization closing SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4cdd8095]
+    21:24:44,045 DEBUG DataSourceTransactionManager:740 - Initiating transaction commit
+    21:24:44,045 DEBUG DataSourceTransactionManager:326 - Committing JDBC transaction on Connection [com.mysql.cj.jdbc.ConnectionImpl@3f7322c1]
+    21:24:44,179 DEBUG DataSourceTransactionManager:385 - Releasing JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@3f7322c1] after transaction
+
+-->
+Mybatis缓存：
+    1.一级缓存：默认开启，作用域：同一sqlSession两此查询sql语句相同，参数相同，会使用到缓存。
+    两次sql之间如果使用了DML语言或提交事务了，缓存失效。
+    2.二级缓存：手动开启：作用域：同一个mapper中多个sqlSession共享二级缓存，在两个sql之间提交事务也会使缓存失效。
+    每个mapper有各自的缓存，多个mapper缓存之间可能会造成脏读问题。可以通过在mapper文件中配置<cache-ref>来引用其他mapper的缓存，从而实现mapper共享缓存解决脏读问题。
+        ①在applicationContext.xml中sqlSessionFactory配置属性：configLocation引用mybatis-config.xml文件
+        ②在mybatis-config.xml中配置<settings> <setting name="cacheEnabled" value="true"/> </settings>
+        ③在对应的mapper文件中加入<cache>
+                                <property name="eviction" value="LRU"/>
+                                <property name="flushInterval" value="10000"/>
+                                <property name="size" value="1024"/>
+                                <property name="readOnly" value="false"/>
+                              </cache>
+SpringMVC执行流程：
+    1.用户发起请求，被前端控制器拦截
+    2.前端控制器请求处理器映射器查找处理器handler
+    3.处理器映射器根据配置查找相关的handler，返回给前端控制器
+    4.前端控制器请求处理器适配器执行相应的处理器
+    5.处理器适配器执行handler
+    6.将执行结果ModelAndView返回
+    7.处理器适配器将ModelAndView交给前端控制器
+    8.前端控制器就收ModelAndView并请求视图解析器
+    9.视图解析器根据view匹配相应的视图，返回DispatcherServlet
+    10.DispatcherServlet收到View后，对视图进行渲染，将Model中数据填充到View中
+    11.前端控制器返回请求结果给用户
+处理器适配器执行handler的过程中，还会做额外工作，
+    如：使用HttpMessageConverter将请求信息(JSON,XML)转换成对象或将对象转换成转换成对应的响应信息
+        数据转换、数据格式化、数据校验等
+

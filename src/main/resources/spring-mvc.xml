@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!-- 扫描controller，并且扫描其中注解-->
+    <context:component-scan base-package="com.zph.controller"/>
+    <!--  设置配置方式  -->
+    <mvc:annotation-driven>
+        <!--启用@ResponseBody注解需解决中文乱码问题-->
+        <mvc:message-converters register-defaults="true">
+            <bean class="org.springframework.http.converter.StringHttpMessageConverter">
+                <property name="supportedMediaTypes">
+                    <list>
+                        <value>text/plain;charset=UTF-8</value>
+                        <value>text/html;charset=UTF-8</value>
+                    </list>
+                </property>
+            </bean>
+
+            <bean class="com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter">
+                <property name="supportedMediaTypes">
+                    <list>
+                        <value>text/html;charset=UTF-8</value>
+                        <value>application/json</value>
+                        <value>application/xml;charset=UTF-8</value>
+                    </list>
+                </property>
+            </bean>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+    <!--  视图解析器  -->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+        <property name="prefix" value="/WEB-INF/views/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+    <!--true为cglib代理，false为JDK动态代理（目标类实现接口）-->
+    <aop:aspectj-autoproxy proxy-target-class="true"/>
+    <!--配置RequestMappingHandlerAdapter代替DispatcherServlet默认的RequestMappingHandlerAdapter-->
+<!--    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">-->
+<!--        <property name="messageConverters">-->
+<!--            <list>-->
+<!--                <bean class="org.springframework.http.converter.StringHttpMessageConverter">-->
+<!--                    <property name="defaultCharset" value="UTF-8"/>-->
+<!--                    <property name="supportedMediaTypes">-->
+<!--                        <list>-->
+<!--                            <value>text/plain;charset=UTF-8</value>-->
+<!--                            <value>text/html;charset=UTF-8</value>-->
+<!--                            <value>application/json</value>-->
+<!--                            <value>application/xml;charset=UTF-8</value>-->
+<!--                        </list>-->
+<!--                    </property>-->
+<!--                </bean>-->
+<!--                <bean class="org.springframework.http.converter.ByteArrayHttpMessageConverter"/>-->
+<!--            </list>-->
+<!--        </property>-->
+<!--    </bean>-->
+</beans>

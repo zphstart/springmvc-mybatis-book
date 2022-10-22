@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+    <!--    引入jdbc信息-->
+<!--    <properties resource="jdbc.properties"></properties>-->
+
+    <!--开启②二级缓存-->
+    <settings>
+        <setting name="cacheEnabled" value="true"/>
+    </settings>
+    <!--    给数据库映射对象起别名-->
+<!--    <typeAliases>-->
+<!--        &lt;!&ndash;        将单个类起别名&ndash;&gt;-->
+<!--        &lt;!&ndash;        <typeAlias type="com.zph.mybatis.pojo.User" alias="user"></typeAlias>&ndash;&gt;-->
+<!--        &lt;!&ndash;        以包为单位，将包下所有类启用别名，别名类类名（不区分大小写）&ndash;&gt;-->
+<!--        <package name=""/>-->
+<!--    </typeAliases>-->
+<!--    <environments default="development">-->
+<!--        <environment id="development">-->
+<!--            <transactionManager type="JDBC"/>-->
+<!--            <dataSource type="POOLED">-->
+<!--                <property name="driver" value="${jdbc.driver}"/>-->
+<!--                <property name="url" value="${jdbc.url}"/>-->
+<!--                <property name="username" value="${jdbc.username}"/>-->
+<!--                <property name="password" value="${jdbc.password}"/>-->
+<!--            </dataSource>-->
+<!--        </environment>-->
+<!--    </environments>-->
+
+<!--    <mappers>-->
+<!--        &lt;!&ndash;        以包为单位添加映射文件-->
+<!--            1.映射文件包名必须与mapper接口的包名一致-->
+<!--            2.mapper接口与映射文件名字一致-->
+<!--        &ndash;&gt;-->
+<!--        <package name=""/>-->
+
+<!--    </mappers>-->
+</configuration>
