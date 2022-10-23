@@ -23,7 +23,7 @@ import com.zph.model.User;
 @Component
 public class UserConsumer implements MessageListener {
 
-    private static int count =0;
+    public static int count =0;
 
     @Resource
     private RedisTemplate redisTemplate;

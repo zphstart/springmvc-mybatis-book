@@ -1,13 +1,19 @@
 package com.zph.controller;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import javax.annotation.Resource;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.ibatis.annotations.Param;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +49,9 @@ public class UserController {
 
     @Resource
     private UserValidator userValidator;
+
+    @Resource
+    private RedisTemplate redisTemplate;
 
     @GetMapping("/findAll")
     public String findAll(Model model){
@@ -133,7 +142,7 @@ public class UserController {
         passwordList.add("5555555");
         passwordList.add("6666666");
         Random random = new Random();
-        while (count<5){
+        while (count<1000){
             int userIndex = random.nextInt(userList.size());
             int passwordIndex = random.nextInt(passwordList.size());
             User user = new User();
@@ -144,4 +153,38 @@ public class UserController {
         }
         return "success";
     }
+
+    @GetMapping(value = "/getAllUser")
+    public String getUserFromRedis(Model model){
+        ArrayList<User> list = new ArrayList<>();
+        int size = redisTemplate.keys("*").size();  //redis中现有的数据.
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < size; i++) {
+            Map map = redisTemplate.opsForHash().entries("user" + i);
+            User user = new User();
+            user.setUsername((String)map.get("username"));
+            user.setPassword((String)map.get("password"));
+            list.add(user);
+        }
+        long end = System.currentTimeMillis();
+        model.addAttribute("list",list);
+        model.addAttribute("time",(end-start)/1000);
+        return "hello";
+    }
+
+    @GetMapping(value = "/getRedisUser")
+    public String getRedis(){
+        redisTemplate.setKeySerializer(new StringRedisSerializer(StandardCharsets.UTF_8));
+        redisTemplate.setValueSerializer(new StringRedisSerializer(StandardCharsets.UTF_8));
+        redisTemplate.setHashKeySerializer(new StringRedisSerializer(StandardCharsets.UTF_8));
+        redisTemplate.setHashValueSerializer(new StringRedisSerializer(StandardCharsets.UTF_8));
+        int count = redisTemplate.keys("*").size();
+
+        System.out.println(count);
+        String username =(String) redisTemplate.opsForHash().entries("user1").get("username");
+        String password =(String) redisTemplate.opsForHash().entries("user1").get("password");
+        System.out.println(username + "  " +password);
+        return "success";
+    }
+
 }

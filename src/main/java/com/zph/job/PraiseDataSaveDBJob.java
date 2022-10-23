@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.zph.model.User;
+import com.zph.mq.UserConsumer;
 import com.zph.service.UserService;
 
 /**
@@ -28,7 +29,7 @@ public class PraiseDataSaveDBJob {
     @Resource
     private UserService userService;
 
-    @Scheduled(cron="*/20 * * * * *")
+    @Scheduled(cron="0 0 0 * * ?")
     private void savePraiseDataToDB2(){
         String entry = "user";
         int count = redisTemplate.keys("*").size();
@@ -36,7 +37,7 @@ public class PraiseDataSaveDBJob {
             Map map = redisTemplate.opsForHash().entries(entry + i);
             String username =(String) map.get("username");
             String password =(String) map.get("password");
-            System.out.println(entry + " "+username+" "+password );
+            System.out.println(entry+i + " "+username+" "+password );
             User user = new User();
             user.setUsername(username);
             user.setPassword(password);
@@ -44,5 +45,6 @@ public class PraiseDataSaveDBJob {
             userService.save(user);
             redisTemplate.delete(entry+i);
         }
+        UserConsumer.count=0;
     }
 }

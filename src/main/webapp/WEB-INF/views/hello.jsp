@@ -6,6 +6,7 @@
   To change this template use File | Settings | File Templates.
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="utf-8" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <html>
 <head>
     <title>Getting Started</title>
@@ -13,6 +14,11 @@
 </head>
 <body>
     hello,say
-    ${user}
+    ${time}
+    <br>
+    <c:forEach items="${list}" var="user" begin="0">
+        ${index} - ${user.username}-${user.password}<br>
+    </c:forEach>
+
 </body>
 </html>
